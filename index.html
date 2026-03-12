@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https: data:; img-src 'self' https: data:; media-src https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com;">
     <title>Map Music - Estude suas músicas</title>
     <link rel="icon" type="image/png" href="Logo%20para%20o%20topo%20da%20Guia.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -78,17 +79,20 @@
                         <div class="player-wrapper">
                             <div id="youtubePlayer"></div>
                         </div>
-                        <div class="pitch-controls" title="Transpõe os acordes exibidos (não altera o áudio)">
-                            <span class="pitch-label">Tom (cifra)</span>
-                            <button class="pitch-btn" onclick="shiftKey(-1)" title="Meio tom abaixo">−</button>
-                            <span class="pitch-value" id="currentKeyDisplay">C</span>
-                            <button class="pitch-btn" onclick="shiftKey(1)" title="Meio tom acima">+</button>
+                        <div class="pitch-controls">
+                            <div class="pitch-group">
+                                <span class="pitch-label">Tom (cifra)</span>
+                                <button class="pitch-btn" onclick="shiftKey(-1)" title="Meio tom abaixo">−</button>
+                                <span class="pitch-value" id="currentKeyDisplay">C</span>
+                                <button class="pitch-btn" onclick="shiftKey(1)" title="Meio tom acima">+</button>
+                            </div>
+                            <div class="pitch-group">
+                                <span class="pitch-label">Tom (áudio)</span>
+                                <button class="pitch-btn audio-pitch" onclick="shiftAudioPitch(-1)" title="Meio tom abaixo no áudio">−</button>
+                                <span class="pitch-value audio-pitch-value" id="audioPitchDisplay">0</span>
+                                <button class="pitch-btn audio-pitch" onclick="shiftAudioPitch(1)" title="Meio tom acima no áudio">+</button>
+                            </div>
                         </div>
-                        <a class="transpose-tip" href="https://chromewebstore.google.com/detail/transpose-pitch-speed-loo/ioimlbgefgadofblnajllknopjboejda" target="_blank" rel="noopener noreferrer">
-                            <span class="transpose-tip-icon">🎵</span>
-                            <span class="transpose-tip-text">Quer mudar o tom do <strong>áudio</strong>? Instale a extensão <strong>Transpose</strong></span>
-                            <span class="transpose-tip-badge">Chrome Web Store →</span>
-                        </a>
                         <div class="song-meta">
                             <h3 class="song-artist" id="songArtist"></h3>
                             <p class="song-title" id="songTitle"></p>

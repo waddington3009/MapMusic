@@ -1,5 +1,5 @@
 /* ================================================================
-   Map Music – Main Application  (v2 – all fixes)
+   Map Music – Main Application  (v3 – Electron Desktop)
    ================================================================ */
 
 // ────────────────────────────────────────────────────────────────
@@ -24,6 +24,7 @@ const state = {
     currentKey: 0,
     originalKey: 0,
     transpose: 0,
+    audioPitch: 0,      // semitones for audio pitch shift
 };
 
 // ────────────────────────────────────────────────────────────────
@@ -49,16 +50,19 @@ function extractVideoId(url) {
 
 function embedPlayer(videoId) {
     const container = document.getElementById('youtubePlayer');
-    // Direct iframe embed – avoids Error 153 from the JS API
-    container.innerHTML = `<iframe
+    const preloadUrl = window.electronAPI.getWebviewPreloadPath();
+    // Use Electron webview for YouTube – allows pitch shifting
+    container.innerHTML = `<webview
+        id="ytWebview"
         src="https://www.youtube.com/embed/${encodeURIComponent(videoId)}?rel=0&modestbranding=1&autoplay=0"
-        width="100%" height="100%"
-        frameborder="0"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-        allowfullscreen
-        referrerpolicy="no-referrer-when-downgrade"
-        style="position:absolute;inset:0;width:100%;height:100%;border:none;">
-    </iframe>`;
+        preload="${preloadUrl}"
+        style="position:absolute;inset:0;width:100%;height:100%;border:none;"
+        allowpopups>
+    </webview>`;
+    
+    // Reset pitch when loading new video
+    state.audioPitch = 0;
+    updateAudioPitchDisplay();
 }
 
 // ────────────────────────────────────────────────────────────────
@@ -102,94 +106,38 @@ function parseSongTitle(title, channel) {
 }
 
 // ────────────────────────────────────────────────────────────────
-// API SERVICE
+// API SERVICE (via Electron IPC)
 // ────────────────────────────────────────────────────────────────
-async function apiPost(url, body) {
-    const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return res.json();
-}
 
 async function getVideoInfo(youtubeUrl) {
-    // 1) Netlify function
+    // Use Electron IPC (main process makes the request, no CORS)
     try {
-        const data = await apiPost('/api/get-video-info', { url: youtubeUrl });
-        if (data.title) return data;
+        const data = await window.electronAPI.getVideoInfo(youtubeUrl);
+        if (data && data.title) return data;
     } catch (_) {}
-
-    // 2) Direct oEmbed
-    try {
-        const r = await fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent(youtubeUrl)}&format=json`);
-        if (r.ok) {
-            const d = await r.json();
-            return { title: d.title, author: d.author_name, thumbnail: d.thumbnail_url };
-        }
-    } catch (_) {}
-
-    // 3) noembed.com
-    try {
-        const r = await fetch(`https://noembed.com/embed?url=${encodeURIComponent(youtubeUrl)}`);
-        if (r.ok) {
-            const d = await r.json();
-            if (d.title) return { title: d.title, author: d.author_name || '', thumbnail: d.thumbnail_url || '' };
-        }
-    } catch (_) {}
-
     return null;
 }
 
 async function getLyrics(artist, title) {
     console.log(`[MapMusic] Buscando letra: "${artist}" - "${title}"`);
-
-    // 1) Netlify function (tries Vagalume + lyrics.ovh server-side)
     try {
-        const data = await apiPost('/api/get-lyrics', { artist, title });
-        if (data.lyrics) {
+        const data = await window.electronAPI.getLyrics(artist, title);
+        if (data && data.lyrics) {
             console.log(`[MapMusic] Letra encontrada via: ${data.source}`);
             return data.lyrics;
         }
     } catch (_) {}
-
-    // 2) Direct lrclib.net (CORS-friendly, works from browser)
-    try {
-        const lrcUrl = `https://lrclib.net/api/search?q=${encodeURIComponent(artist + ' ' + title)}`;
-        const lr = await fetch(lrcUrl, { headers: { 'User-Agent': 'MapMusic/1.0' } });
-        if (lr.ok) {
-            const results = await lr.json();
-            if (Array.isArray(results)) {
-                for (const r of results) {
-                    if (r.plainLyrics) return r.plainLyrics;
-                }
-            }
-        }
-    } catch (_) {}
-
-    // 3) Direct lyrics.ovh as last resort
-    try {
-        const url = `https://api.lyrics.ovh/v1/${encodeURIComponent(artist)}/${encodeURIComponent(title)}`;
-        const r = await fetch(url);
-        if (r.ok) {
-            const d = await r.json();
-            if (d.lyrics) return d.lyrics;
-        }
-    } catch (_) {}
-
     return null;
 }
 
 async function getChords(artist, title) {
     if (!artist || !title || title.length < 2) return null;
     console.log(`[MapMusic] Buscando cifra: "${artist}" - "${title}"`);
-    // Try Netlify/local function
     try {
-        const data = await apiPost('/api/get-chords', { artist, title });
-        if (data.chords) {
-            console.log(`[MapMusic] Cifra encontrada via: ${data.source}`);
-            return data.chords;
+        const data = await window.electronAPI.getChords(artist, title);
+        if (data) {
+            console.log('[MapMusic] Cifra encontrada via CifraClub');
+            return data;
         }
     } catch (_) {}
     return null;
@@ -493,6 +441,37 @@ function applyKeyChange(targetIndex) {
     });
     closeKeySelector();
     showToast(`Tom alterado para ${keyName(state.currentKey, false)}`);
+}
+
+// ────────────────────────────────────────────────────────────────
+// AUDIO PITCH SHIFT (via webview)
+// ────────────────────────────────────────────────────────────────
+function shiftAudioPitch(delta) {
+    state.audioPitch += delta;
+    // Clamp to reasonable range (-12 to +12 semitones)
+    state.audioPitch = Math.max(-12, Math.min(12, state.audioPitch));
+    updateAudioPitchDisplay();
+    applyAudioPitch();
+}
+
+function applyAudioPitch() {
+    const webview = document.getElementById('ytWebview');
+    if (!webview) return;
+    try {
+        webview.send('set-pitch', state.audioPitch);
+    } catch (e) {
+        console.warn('[MapMusic] Could not send pitch to webview:', e);
+    }
+    const sign = state.audioPitch >= 0 ? '+' : '';
+    showToast(`Tom do áudio: ${sign}${state.audioPitch} semitons`);
+}
+
+function updateAudioPitchDisplay() {
+    const el = document.getElementById('audioPitchDisplay');
+    if (el) {
+        const sign = state.audioPitch > 0 ? '+' : '';
+        el.textContent = `${sign}${state.audioPitch}`;
+    }
 }
 
 // ────────────────────────────────────────────────────────────────
