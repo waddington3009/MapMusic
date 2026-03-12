@@ -272,7 +272,7 @@ function transposeChord(chord, semitones) {
 
 function transposeText(text, semitones) {
     if (semitones === 0) return text;
-    return text.replace(/\b([A-G][#b]?)(m(?:aj|in)?7?|maj7?|dim|aug|sus[24]?|add[29]?|7|9|11|13|6|°|4)*(\/[A-G][#b]?)?\b/g,
+    return text.replace(/\b([A-G][#b]?)(m(?:aj|in)?7?|maj7?|dim|aug|sus[24]?|add[29]?|7|9|11|13|6|°|4|M|\([^)]*\))*(\/[A-G][#b]?)?(?![#\w])/g,
         match => transposeChord(match, semitones)
     );
 }
