@@ -15,10 +15,14 @@ export async function handler(event) {
             return respond(200, { chords, source: 'cifraclub' });
         }
 
-        // Try with simplified title (remove parenthetical info)
-        const simple = title.replace(/\s*[\(\[].*?[\)\]]/g, '').trim();
-        if (simple !== title) {
-            chords = await tryCifraClub(artist, simple);
+        // Try simplified titles: remove parentheses, "+ medley", etc
+        const variations = [
+            title.replace(/\s*[\(\[].*?[\)\]]/g, '').trim(),
+            title.replace(/\s*\+\s*.+$/, '').trim(),
+            title.replace(/\s*[\(\[].*?[\)\]]/g, '').replace(/\s*\+\s*.+$/, '').trim(),
+        ].filter((v, i, a) => v && v !== title && v.length > 2 && a.indexOf(v) === i);
+        for (const v of variations) {
+            chords = await tryCifraClub(artist, v);
             if (chords) {
                 return respond(200, { chords, source: 'cifraclub' });
             }

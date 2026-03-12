@@ -70,6 +70,7 @@ function parseSongTitle(title, channel) {
         .replace(/\s*[\(\[](official|music|lyric|lyrics|video|audio|clipe|oficial|hd|4k|visualizer|live|ao vivo|feat\.?[^\)\]]*|ft\.?[^\)\]]*|prod\.?[^\)\]]*|legendado|[a-z]* version)[^\)\]]*[\)\]]/gi, '')
         .replace(/\s*\|.*$/, '')
         .replace(/\s*#\w+/g, '')
+        .replace(/\s*\+\s*medley\b.*/i, '')  // Strip "+ MEDLEY" and similar
         .trim();
 
     // Try separators: " - ", " – ", " — "
@@ -181,6 +182,7 @@ async function getLyrics(artist, title) {
 }
 
 async function getChords(artist, title) {
+    if (!artist || !title || title.length < 2) return null;
     console.log(`[MapMusic] Buscando cifra: "${artist}" - "${title}"`);
     // Try Netlify/local function
     try {
@@ -191,6 +193,27 @@ async function getChords(artist, title) {
         }
     } catch (_) {}
     return null;
+}
+
+// Build multiple title variations to try for chord search
+function buildTitleVariations(songName) {
+    const variations = new Set();
+    if (songName) variations.add(songName);
+    // Remove parenthetical content: (Ao Vivo), [Live], etc.
+    const noParen = songName.replace(/\s*[\(\[].*?[\)\]]/g, '').trim();
+    if (noParen && noParen !== songName) variations.add(noParen);
+    // Remove "+ anything" (e.g. "+ Medley", "+ Worship")
+    const noPlus = songName.replace(/\s*\+\s*.+$/, '').trim();
+    if (noPlus && noPlus !== songName) variations.add(noPlus);
+    // Combine: remove both
+    const both = noParen.replace(/\s*\+\s*.+$/, '').trim();
+    if (both && both.length > 2 && !variations.has(both)) variations.add(both);
+    // If title has "+", try each part separately
+    if (songName.includes('+')) {
+        const firstPart = songName.split('+')[0].trim();
+        if (firstPart.length > 2) variations.add(firstPart);
+    }
+    return [...variations];
 }
 
 // ────────────────────────────────────────────────────────────────
@@ -413,11 +436,19 @@ function shiftKey(delta) {
     state.transpose += delta;
     state.currentKey = ((state.originalKey + state.transpose) % 12 + 12) % 12;
     updateCifraKeyDisplay();
+    let changed = 0;
     document.querySelectorAll('#cifraContent .chord-line').forEach(cl => {
         if (cl.textContent.trim()) {
             cl.textContent = transposeText(cl.textContent, delta);
+            changed++;
         }
     });
+    const k = keyName(state.currentKey, false);
+    if (changed > 0) {
+        showToast(`Tom alterado para ${k}`);
+    } else {
+        showToast(`Tom: ${k} (adicione acordes na aba Cifra para transpor)`);
+    }
 }
 
 function openKeySelector() {
@@ -680,16 +711,20 @@ async function doSearch(url) {
         state.rawLyrics = lyrics || '';
         state.mappedLyrics = analyzeLyrics(state.rawLyrics);
 
-        // 4) Fetch chords/cifra in parallel
+        // 4) Fetch chords/cifra – try multiple strategies
         state.cifraData = null;
-        if (artist && songName) {
-            const chords = await getChords(artist, songName);
-            if (chords) state.cifraData = chords;
+        const titleVariations = buildTitleVariations(songName);
+        const artistVariations = [artist];
+        // Also try channel name as alternative artist
+        if (info && info.author) {
+            const ch = info.author.replace(/\s*[-–]?\s*(oficial|official|music|topic|vevo|tour)$/i, '').trim();
+            if (ch && ch.toLowerCase() !== artist.toLowerCase()) artistVariations.push(ch);
         }
-        if (!state.cifraData && artist && songName) {
-            const simpleSong = songName.replace(/\s*[\(\[].*?[\)\]]/g, '').trim();
-            if (simpleSong !== songName) {
-                const chords = await getChords(artist, simpleSong);
+        for (const art of artistVariations) {
+            if (state.cifraData) break;
+            for (const t of titleVariations) {
+                if (state.cifraData) break;
+                const chords = await getChords(art, t);
                 if (chords) state.cifraData = chords;
             }
         }

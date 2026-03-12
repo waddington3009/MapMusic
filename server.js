@@ -78,19 +78,23 @@ async function handleAPI(req, res) {
             if (req.url === '/api/get-chords') {
                 const { artist, title } = data;
 
-                // Try CifraClub
+                // Try CifraClub with original title
                 const chords = await tryCifraClub(artist, title);
                 if (chords) {
                     res.writeHead(200);
                     return res.end(JSON.stringify({ chords, source: 'cifraclub' }));
                 }
-                // Try with simplified title
-                const simple = title.replace(/\s*[\(\[].*?[\)\]]/g, '').trim();
-                if (simple !== title) {
-                    const chords2 = await tryCifraClub(artist, simple);
-                    if (chords2) {
+                // Try simplified titles: remove parentheses, "+ medley", etc
+                const variations = [
+                    title.replace(/\s*[\(\[].*?[\)\]]/g, '').trim(),
+                    title.replace(/\s*\+\s*.+$/, '').trim(),
+                    title.replace(/\s*[\(\[].*?[\)\]]/g, '').replace(/\s*\+\s*.+$/, '').trim(),
+                ].filter((v, i, a) => v && v !== title && v.length > 2 && a.indexOf(v) === i);
+                for (const v of variations) {
+                    const c = await tryCifraClub(artist, v);
+                    if (c) {
                         res.writeHead(200);
-                        return res.end(JSON.stringify({ chords: chords2, source: 'cifraclub' }));
+                        return res.end(JSON.stringify({ chords: c, source: 'cifraclub' }));
                     }
                 }
                 res.writeHead(404);
