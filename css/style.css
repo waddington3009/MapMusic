@@ -1,0 +1,546 @@
+/* ================================================================
+   Map Music – Style Sheet
+   Colors extracted from the logo:
+     Teal    #1A8A8A
+     Orange  #E8722A
+     Gold    #F0C244
+   ================================================================ */
+
+/* ---------- Variables ---------- */
+:root {
+    --teal:        #1A8A8A;
+    --teal-dark:   #0D5456;
+    --teal-light:  #2CB5B5;
+    --teal-bg:     #E6F4F4;
+    --orange:      #E8722A;
+    --orange-light:#F09050;
+    --orange-bg:   #FFF2E8;
+    --gold:        #F0C244;
+    --gold-light:  #F5D574;
+    --white:       #FFFFFF;
+    --bg:          #F2F6F6;
+    --text:        #1A2A2A;
+    --text-mid:    #3D5858;
+    --text-light:  #7A9494;
+    --border:      #D0DEDE;
+    --radius:      14px;
+    --radius-sm:   8px;
+    --radius-xs:   6px;
+    --shadow:      0 2px 12px rgba(13,84,86,.07);
+    --shadow-lg:   0 8px 32px rgba(13,84,86,.10);
+    --transition:  .25s ease;
+    --font-body:   'Inter', system-ui, sans-serif;
+    --font-head:   'Poppins', 'Inter', sans-serif;
+}
+
+/* ---------- Reset ---------- */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+    font-family:var(--font-body);
+    color:var(--text);
+    background:var(--bg);
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+}
+img{max-width:100%;display:block}
+button{cursor:pointer;font-family:inherit;border:none;background:none}
+input,textarea{font-family:inherit}
+a{text-decoration:none;color:inherit}
+
+/* ---------- Scrollbar ---------- */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--teal-light);border-radius:3px}
+
+/* ================================================================
+   HEADER
+   ================================================================ */
+.header{
+    position:sticky;top:0;z-index:100;
+    background:rgba(255,255,255,.85);
+    backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--border);
+}
+.header-inner{
+    max-width:1280px;margin:0 auto;
+    display:flex;align-items:center;
+    padding:10px 24px;
+}
+.header-brand{
+    display:flex;align-items:center;gap:10px;
+}
+.header-logo{
+    width:36px;height:36px;object-fit:contain;
+}
+.header-title{
+    font-family:var(--font-head);font-weight:700;
+    font-size:1.25rem;color:var(--teal-dark);
+}
+.header-title .accent{color:var(--orange)}
+
+/* ================================================================
+   HERO / SEARCH
+   ================================================================ */
+.hero{
+    display:flex;align-items:center;justify-content:center;
+    min-height:calc(100vh - 57px);
+    padding:40px 24px;
+    text-align:center;
+    background:linear-gradient(160deg, var(--teal-bg) 0%, var(--white) 40%, var(--orange-bg) 100%);
+}
+.hero-inner{max-width:640px}
+.hero-logo{
+    width:140px;margin:0 auto 24px;
+    animation:float 4s ease-in-out infinite;
+}
+@keyframes float{
+    0%,100%{transform:translateY(0)}
+    50%{transform:translateY(-8px)}
+}
+.hero-title{
+    font-family:var(--font-head);font-weight:800;
+    font-size:2.4rem;
+    color:var(--teal-dark);margin-bottom:8px;
+}
+.hero-subtitle{
+    font-size:1.1rem;color:var(--text-light);margin-bottom:32px;
+}
+.hero-hint{
+    font-size:.82rem;color:var(--text-light);margin-top:16px;
+    opacity:.7;
+}
+
+/* ---------- Search box ---------- */
+.search-box{
+    display:flex;gap:10px;
+    max-width:600px;margin:0 auto;
+}
+.search-box.compact{max-width:100%}
+.search-input-wrap{
+    flex:1;display:flex;align-items:center;
+    background:var(--white);
+    border:2px solid var(--border);
+    border-radius:var(--radius);
+    padding:0 16px;
+    transition:border-color var(--transition);
+}
+.search-input-wrap:focus-within{border-color:var(--teal)}
+.search-icon{color:var(--text-light);flex-shrink:0}
+.search-input-wrap input{
+    flex:1;border:none;outline:none;
+    padding:14px 12px;font-size:1rem;
+    background:transparent;color:var(--text);
+}
+.search-input-wrap input::placeholder{color:var(--text-light)}
+.search-box.compact .search-input-wrap input{padding:10px 12px;font-size:.92rem}
+
+/* ---------- Buttons ---------- */
+.btn-primary{
+    display:inline-flex;align-items:center;gap:6px;
+    background:var(--teal);color:#fff;
+    padding:14px 28px;border-radius:var(--radius);
+    font-size:1rem;font-weight:600;
+    transition:background var(--transition), transform var(--transition);
+    white-space:nowrap;
+}
+.btn-primary:hover{background:var(--teal-dark);transform:translateY(-1px)}
+.btn-primary.compact{padding:10px 20px;font-size:.92rem}
+
+.btn-secondary{
+    display:inline-flex;align-items:center;gap:4px;
+    background:var(--teal-bg);color:var(--teal-dark);
+    padding:8px 16px;border-radius:var(--radius-sm);
+    font-size:.85rem;font-weight:500;
+    transition:background var(--transition);
+}
+.btn-secondary:hover{background:#D0EDED}
+
+.btn-export{
+    display:inline-flex;align-items:center;gap:8px;
+    background:var(--orange);color:#fff;
+    padding:12px 24px;border-radius:var(--radius-sm);
+    font-size:.95rem;font-weight:600;
+    transition:background var(--transition), transform var(--transition);
+}
+.btn-export:hover{background:#cf6220;transform:translateY(-1px)}
+.btn-export svg{flex-shrink:0}
+
+/* ================================================================
+   LOADING
+   ================================================================ */
+.loading-overlay{
+    display:none;
+    position:fixed;inset:0;z-index:200;
+    background:rgba(255,255,255,.88);
+    backdrop-filter:blur(6px);
+    flex-direction:column;align-items:center;justify-content:center;gap:16px;
+}
+.loading-overlay.active{display:flex}
+.spinner{
+    width:48px;height:48px;
+    border:4px solid var(--border);
+    border-top-color:var(--teal);
+    border-radius:50%;
+    animation:spin .7s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-overlay p{font-size:1rem;color:var(--text-mid)}
+
+/* ================================================================
+   RESULTS
+   ================================================================ */
+.results{display:none;padding:24px}
+.results.active{display:block}
+.results-inner{max-width:1280px;margin:0 auto}
+.results-search{margin-bottom:20px}
+
+.results-layout{
+    display:grid;
+    grid-template-columns:340px 1fr;
+    gap:24px;
+    align-items:start;
+}
+
+/* ---------- Player panel ---------- */
+.player-panel{position:sticky;top:75px}
+.player-card{
+    background:var(--white);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    overflow:hidden;
+}
+.player-wrapper{
+    position:relative;
+    padding-bottom:56.25%;
+    background:#000;
+}
+.player-wrapper iframe{
+    position:absolute;inset:0;
+    width:100%;height:100%;border:none;
+}
+
+/* pitch / key controls */
+.pitch-controls{
+    display:flex;align-items:center;justify-content:center;
+    gap:16px;padding:16px;
+    border-bottom:1px solid var(--border);
+}
+.pitch-label{
+    font-size:.82rem;font-weight:600;
+    text-transform:uppercase;letter-spacing:.05em;
+    color:var(--text-light);
+}
+.pitch-btn{
+    width:40px;height:40px;
+    display:flex;align-items:center;justify-content:center;
+    border-radius:50%;
+    background:var(--teal-bg);
+    color:var(--teal-dark);
+    font-size:1.3rem;font-weight:700;
+    transition:background var(--transition), transform var(--transition);
+}
+.pitch-btn:hover{background:var(--teal);color:#fff;transform:scale(1.08)}
+.pitch-value{
+    min-width:48px;text-align:center;
+    font-family:var(--font-head);font-weight:700;
+    font-size:1.2rem;color:var(--teal-dark);
+}
+
+/* song info */
+.song-meta{padding:16px;text-align:center}
+.song-artist{
+    font-family:var(--font-head);font-size:1rem;
+    font-weight:700;color:var(--teal-dark);
+}
+.song-title{font-size:.9rem;color:var(--text-light);margin-top:2px}
+
+/* ---------- Content panel ---------- */
+.content-panel{min-width:0}
+
+/* Tabs */
+.tabs-nav{
+    display:flex;gap:4px;
+    background:var(--white);
+    border-radius:var(--radius);
+    padding:4px;
+    box-shadow:var(--shadow);
+    margin-bottom:20px;
+}
+.tab-btn{
+    flex:1;padding:12px 8px;
+    border-radius:10px;
+    font-size:.95rem;font-weight:600;
+    color:var(--text-mid);
+    transition:all var(--transition);
+}
+.tab-btn:hover{background:var(--teal-bg)}
+.tab-btn.active{
+    background:var(--teal);color:#fff;
+    box-shadow:0 2px 8px rgba(26,138,138,.3);
+}
+
+/* Tab panel */
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+.tab-panel-inner{
+    background:var(--white);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:28px;
+}
+.panel-actions{
+    margin-top:24px;padding-top:20px;
+    border-top:1px solid var(--border);
+    display:flex;justify-content:flex-end;
+}
+
+/* ---------- Lyrics display ---------- */
+.lyrics-display{
+    white-space:pre-wrap;
+    font-size:1rem;line-height:1.85;
+    color:var(--text);
+}
+.lyrics-display .section-label{
+    display:inline-block;
+    background:var(--teal-bg);color:var(--teal-dark);
+    padding:3px 12px;border-radius:var(--radius-xs);
+    font-size:.82rem;font-weight:600;
+    text-transform:uppercase;letter-spacing:.03em;
+    margin:16px 0 6px;
+}
+.lyrics-display .repeat-badge{
+    display:inline-block;
+    background:var(--orange-bg);color:var(--orange);
+    padding:1px 8px;border-radius:var(--radius-xs);
+    font-size:.78rem;font-weight:700;
+    margin-left:8px;
+    vertical-align:super;
+}
+
+/* ---------- Cifra display ---------- */
+.cifra-toolbar{
+    display:flex;align-items:center;justify-content:space-between;
+    flex-wrap:wrap;gap:12px;
+    margin-bottom:20px;
+    padding-bottom:16px;
+    border-bottom:1px solid var(--border);
+}
+.cifra-key-info{display:flex;align-items:center;gap:12px;font-size:.95rem}
+.cifra-hint{font-size:.8rem;color:var(--text-light);font-style:italic}
+
+.cifra-display{font-family:'Courier New',Courier,monospace;font-size:.92rem;line-height:1.3}
+.cifra-display .line-pair{margin-bottom:4px}
+.cifra-display .chord-line{
+    color:var(--teal-dark);font-weight:700;
+    min-height:1.3em;
+    outline:none;
+    cursor:text;
+    white-space:pre;
+    border-bottom:1px dashed transparent;
+    transition:border-color var(--transition);
+}
+.cifra-display .chord-line:hover,
+.cifra-display .chord-line:focus{
+    border-bottom-color:var(--teal-light);
+    background:var(--teal-bg);
+    border-radius:2px;
+}
+.cifra-display .lyric-line{
+    white-space:pre-wrap;color:var(--text);
+    margin-bottom:6px;
+}
+.cifra-display .section-divider{
+    display:block;
+    background:var(--teal-bg);color:var(--teal-dark);
+    padding:3px 12px;border-radius:var(--radius-xs);
+    font-size:.82rem;font-weight:700;
+    text-transform:uppercase;letter-spacing:.03em;
+    margin:18px 0 8px;
+    font-family:var(--font-body);
+}
+
+/* ---------- Mapa editor ---------- */
+.mapa-toolbar{
+    display:flex;flex-wrap:wrap;gap:6px;
+    margin-bottom:16px;
+}
+.mapa-editor{
+    min-height:400px;
+    white-space:pre-wrap;
+    font-size:1rem;line-height:1.85;
+    outline:none;
+    padding:20px;
+    border:2px solid var(--border);
+    border-radius:var(--radius-sm);
+    transition:border-color var(--transition);
+}
+.mapa-editor:focus{border-color:var(--teal)}
+.mapa-editor .section-tag{
+    display:inline-block;
+    background:var(--gold);color:var(--teal-dark);
+    padding:2px 10px;border-radius:var(--radius-xs);
+    font-size:.82rem;font-weight:700;
+    text-transform:uppercase;
+    margin:4px 0;
+    user-select:all;
+}
+
+/* ================================================================
+   MODALS
+   ================================================================ */
+.modal-overlay{
+    display:none;
+    position:fixed;inset:0;z-index:300;
+    background:rgba(0,0,0,.45);
+    backdrop-filter:blur(4px);
+    align-items:center;justify-content:center;
+    padding:24px;
+}
+.modal-overlay.active{display:flex}
+.modal{
+    background:var(--white);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow-lg);
+    width:100%;max-width:520px;
+    max-height:85vh;
+    overflow-y:auto;
+}
+.modal.modal-lg{max-width:680px}
+.modal-header{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:20px 24px;
+    border-bottom:1px solid var(--border);
+}
+.modal-header h2{
+    font-family:var(--font-head);font-size:1.15rem;
+    color:var(--teal-dark);
+}
+.modal-close{
+    width:36px;height:36px;
+    display:flex;align-items:center;justify-content:center;
+    border-radius:50%;
+    font-size:1.4rem;color:var(--text-light);
+    transition:background var(--transition);
+}
+.modal-close:hover{background:var(--bg)}
+.modal-body{padding:24px}
+.modal-subtitle{margin-bottom:20px;color:var(--text-mid)}
+.modal-actions{margin-top:20px;display:flex;justify-content:flex-end}
+
+/* Key grid */
+.key-group-title{
+    font-size:.82rem;font-weight:600;color:var(--text-light);
+    text-transform:uppercase;letter-spacing:.05em;
+    margin:16px 0 8px;
+}
+.key-grid{
+    display:grid;
+    grid-template-columns:repeat(6,1fr);
+    gap:6px;
+}
+.key-grid button{
+    padding:10px 4px;
+    border-radius:var(--radius-xs);
+    font-size:.9rem;font-weight:600;
+    background:var(--bg);
+    color:var(--text);
+    transition:all var(--transition);
+}
+.key-grid button:hover{background:var(--teal-bg);color:var(--teal-dark)}
+.key-grid button.active{background:var(--teal);color:#fff}
+
+/* Manual lyrics */
+.manual-textarea{
+    width:100%;
+    padding:16px;
+    border:2px solid var(--border);
+    border-radius:var(--radius-sm);
+    font-size:.95rem;line-height:1.7;
+    resize:vertical;
+    outline:none;
+    transition:border-color var(--transition);
+}
+.manual-textarea:focus{border-color:var(--teal)}
+
+/* ================================================================
+   TOAST
+   ================================================================ */
+.toast{
+    position:fixed;bottom:24px;left:50%;
+    transform:translateX(-50%) translateY(80px);
+    background:var(--teal-dark);color:#fff;
+    padding:12px 24px;border-radius:var(--radius-sm);
+    font-size:.9rem;font-weight:500;
+    box-shadow:var(--shadow-lg);
+    opacity:0;
+    transition:transform .4s ease, opacity .4s ease;
+    z-index:400;
+    pointer-events:none;
+}
+.toast.active{
+    transform:translateX(-50%) translateY(0);
+    opacity:1;
+}
+.toast.error{background:#C0392B}
+
+/* ================================================================
+   EMPTY / ERROR STATES
+   ================================================================ */
+.empty-state{
+    text-align:center;padding:48px 24px;color:var(--text-light);
+}
+.empty-state p{font-size:1rem;margin-bottom:16px}
+
+/* ================================================================
+   RESPONSIVE
+   ================================================================ */
+@media(max-width:960px){
+    .results-layout{
+        grid-template-columns:1fr;
+    }
+    .player-panel{
+        position:static;
+    }
+    .player-card{
+        max-width:480px;
+        margin:0 auto;
+    }
+}
+@media(max-width:600px){
+    .hero-title{font-size:1.7rem}
+    .search-box{flex-direction:column}
+    .btn-primary,.btn-primary.compact{width:100%;justify-content:center}
+    .tabs-nav{overflow-x:auto;flex-wrap:nowrap}
+    .tab-btn{white-space:nowrap;flex:none;padding:12px 20px}
+    .tab-panel-inner{padding:20px 16px}
+    .key-grid{grid-template-columns:repeat(4,1fr)}
+    .cifra-toolbar{flex-direction:column;align-items:flex-start}
+    .mapa-toolbar{gap:4px}
+    .mapa-toolbar .btn-secondary{padding:6px 10px;font-size:.8rem}
+}
+
+/* ================================================================
+   PDF EXPORT HELPER (hidden clone styling)
+   ================================================================ */
+.pdf-clone{
+    position:absolute;left:-9999px;top:0;
+    background:#fff;color:#1A2A2A;
+    padding:32px;width:794px;
+    font-family:'Inter',sans-serif;
+}
+.pdf-clone .section-label,
+.pdf-clone .section-divider,
+.pdf-clone .section-tag{
+    background:#E6F4F4;color:#0D5456;
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact;
+}
+.pdf-clone .repeat-badge{
+    background:#FFF2E8;color:#E8722A;
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact;
+}
+.pdf-clone .chord-line{
+    color:#0D5456;font-weight:700;
+}

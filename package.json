@@ -1,0 +1,12 @@
+{
+  "name": "map-music",
+  "version": "1.0.0",
+  "description": "Map Music - Estude suas músicas de forma prática",
+  "private": true,
+  "scripts": {
+    "dev": "npx netlify dev"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
