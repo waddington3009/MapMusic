@@ -45,6 +45,10 @@ function slugify(text) {
 function artistSlugs(artist) {
     const base = slugify(artist);
     const slugs = [base];
+    const prefixes = ['ministerio-', 'projeto-', 'comunidade-', 'banda-', 'igreja-', 'pastor-'];
+    for (const p of prefixes) {
+        if (!base.startsWith(p)) slugs.push(p + base);
+    }
     const suffixes = ['-ina', '-oficial', '-banda', '-grupo', '-cantor', '-worship', '-music'];
     for (const s of suffixes) {
         slugs.push(base + s);
@@ -101,27 +105,40 @@ function parseCifraHtml(html) {
     return { lines: result, key, raw };
 }
 
+function slugSimilarity(a, b) {
+    const wa = a.split('-').filter(Boolean);
+    const wb = b.split('-').filter(Boolean);
+    if (wa.length === 0 || wb.length === 0) return 0;
+    let matched = 0;
+    for (const w of wa) {
+        if (w.length <= 1) continue;
+        if (wb.some(v => v.includes(w) || w.includes(v))) matched++;
+    }
+    return matched / Math.max(wa.filter(w => w.length > 1).length, 1);
+}
+
 async function searchArtistPage(artistSlug, titleSlug) {
     const page = await fetchCifraPage(`https://www.cifraclub.com.br/${artistSlug}/`);
     if (!page) return null;
+
+    const finalPath = new URL(page.finalUrl).pathname;
+    if (finalPath === '/' || !finalPath.includes(artistSlug)) return null;
 
     const linkPattern = new RegExp(`href="/${artistSlug}/([^"]+)/"`, 'gi');
     const songSlugs = [];
     let m;
     while ((m = linkPattern.exec(page.html)) !== null) {
-        songSlugs.push(m[1]);
+        const s = m[1];
+        if (!s.includes('/')) songSlugs.push(s);
     }
 
-    const candidates = songSlugs.filter(s => {
-        if (s === titleSlug) return true;
-        const words = titleSlug.split('-').filter(w => w.length > 2);
-        return words.length > 0 && words.every(w => s.includes(w));
-    });
-
-    if (candidates.length > 0) {
-        return candidates.find(c => c === titleSlug) || candidates.sort((a, b) => a.length - b.length)[0];
+    let bestSlug = null, bestScore = 0;
+    for (const s of [...new Set(songSlugs)]) {
+        if (s === titleSlug) return s;
+        const score = slugSimilarity(titleSlug, s);
+        if (score > bestScore) { bestScore = score; bestSlug = s; }
     }
-    return null;
+    return bestScore >= 0.6 ? bestSlug : null;
 }
 
 async function tryCifraClub(artist, title) {
@@ -146,7 +163,7 @@ async function tryCifraClub(artist, title) {
         // Phase 2: Search artist pages for the song link
         for (const artistSlug of slugVariations) {
             const foundSlug = await searchArtistPage(artistSlug, titleSlug);
-            if (foundSlug && foundSlug !== titleSlug) {
+            if (foundSlug) {
                 const url = `https://www.cifraclub.com.br/${artistSlug}/${foundSlug}/`;
                 const page = await fetchCifraPage(url);
                 if (page) {
